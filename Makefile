@@ -1,11 +1,15 @@
+SRC=twiner/.
+
+all: black isort pylint
+
 .PHONY: black
 black:
-	poetry run black -l 79 twiner/.
+	-poetry run black -l 79 $(SRC)
 
 .PHONY: isort
 isort:
-	poetry run isort twiner/.
+	-poetry run isort $(SRC)
 
 .PHONY: pylint
 pylint:
-	poetry run pylint twiner/.
+	-poetry run pylint $(SRC)
