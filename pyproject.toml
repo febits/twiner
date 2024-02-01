@@ -5,6 +5,10 @@ description = "CLI that helps you with notifications for your favorite streamers
 authors = ["febits <febits@proton.me>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+twiner = "twiner.cli:app"
+
+
 [tool.poetry.dependencies]
 python = "^3.11"
 typer = {extras = ["all"], version = "^0.9.0"}
