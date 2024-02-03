@@ -1,15 +1,21 @@
-SRC=twiner/.
+SRC=./twiner/
+TEST=./tests/
 
-all: black isort pylint
+.PHONY: all
+all: black isort pylint test
 
 .PHONY: black
 black:
-	-poetry run black -l 79 $(SRC)
+	-poetry run black -l 79 $(SRC) $(TEST)
 
 .PHONY: isort
 isort:
-	-poetry run isort $(SRC)
+	-poetry run isort $(SRC) $(TEST)
 
 .PHONY: pylint
 pylint:
-	-poetry run pylint $(SRC)
+	-poetry run pylint $(SRC) $(TEST)
+
+.PHONY: test
+test:
+	-poetry run pytest -vv
