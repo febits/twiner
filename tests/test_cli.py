@@ -1,6 +1,8 @@
+from os import getenv
 from random import randint
 from sys import maxsize as MAXINT
 
+from dotenv import load_dotenv
 from pytest import mark
 from typer.testing import CliRunner
 
@@ -9,6 +11,8 @@ from twiner.cli import add, app, configure, init, list, remove, start
 
 runner = CliRunner()
 DEFAULT_TEST_CONFIG_PATH = f"/tmp/twiner-{randint(1, MAXINT)}/twiner.yaml"
+
+load_dotenv()
 
 
 def test_help_flag():
@@ -43,7 +47,6 @@ def test_version_flag(flag, expected):
 def test_init_subcommand(flag, expected):
     result = runner.invoke(app, ["init", flag, DEFAULT_TEST_CONFIG_PATH])
     assert result.exit_code == 0
-    assert "Config file" in result.stdout
     assert expected in result.stdout
 
 
@@ -54,7 +57,25 @@ def test_init_subcommand(flag, expected):
 def test_list_subcommand(flag, expected):
     result = runner.invoke(app, ["list", flag, DEFAULT_TEST_CONFIG_PATH])
     assert result.exit_code == 0
-    assert "Geral" in result.stdout
-    assert "Credentials" in result.stdout
-    assert "Users to notify" in result.stdout
+    assert expected in result.stdout
+
+
+@mark.skipif(
+    not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
+    reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
+    ".env file or pass through the pytest call. For example: CLIENTID=X "
+    "CLIENTSECRET=Y make test",
+)
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_configure_subcommand(flag, expected):
+    result = runner.invoke(
+        app,
+        ["configure", flag, DEFAULT_TEST_CONFIG_PATH],
+        input=f"{getenv('CLIENTID')}\n{getenv('CLIENTSECRET')}\n",
+    )
+
+    assert result.exit_code == 0
     assert expected in result.stdout

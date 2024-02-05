@@ -42,3 +42,5 @@ class TwinerConfig:
         """Read the config file."""
 
         self.yaml = yaml.safe_load(self.path.open(mode="r"))
+
+    def create_data_dir(self): ...

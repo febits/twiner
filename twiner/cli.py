@@ -8,6 +8,7 @@ from typing_extensions import Annotated
 
 from twiner import __appname__, __version__
 from twiner.config import TwinerConfig
+from twiner.twitch import Twitch
 
 app = typer.Typer(help="🎮 Twiner CLI (Twitch Notifier)")
 console = Console()
@@ -77,7 +78,33 @@ def configure(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Configure the Twitch Credentials."""
-    ...
+    try:
+        config = TwinerConfig(path=configfile)
+        config.read_from_config()
+
+        twitch = Twitch(config)
+        response = twitch.get_access_token(client_id, client_secret)
+
+        if response.status_code == 200:
+            console.print("\n✅ Access token successfully obtained")
+
+            config.yaml["creds"]["client_id"] = client_id
+            config.yaml["creds"]["client_secret"] = client_secret
+            config.yaml["creds"]["access_token"] = response.json()[
+                "access_token"
+            ]
+            config.yaml["creds"]["expires_in"] = response.json()["expires_in"]
+
+            config.write_to_config(config.yaml)
+            console.print(f"🍰 Twitch credentials was stored at {config.path}")
+            console.print(response.json())
+        else:
+            console.print("\n❌ Couldn't obtain access token")
+            console.print(response.json())
+            raise typer.Exit(1)
+
+    except FileNotFoundError:
+        raise FileNotFoundError("Run 'twiner init' first.")
 
 
 @app.command()
@@ -99,9 +126,9 @@ def list(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH
 ):
     """List the config file fields."""
-    config = TwinerConfig(configfile)
 
     try:
+        config = TwinerConfig(configfile)
         config.read_from_config()
 
         userslist = [
@@ -129,8 +156,8 @@ def list(
             f"\t[b]Access Token[/]: "
             f"{config.yaml['creds']['access_token']}\n"
             f"\t[b]Expires in[/]: "
-            f"{timedelta(config.yaml['creds']['expires_in']).days} days "
-            f"({config.yaml['creds']['expires_in']} seconds)\n\n"
+            f"{timedelta(seconds=config.yaml['creds']['expires_in']).days} "
+            f"days ({config.yaml['creds']['expires_in']} seconds)\n\n"
             f"[b]Users to notify[/]:\n"
             f"{userslist_message}"
         )
@@ -145,7 +172,7 @@ def list(
         )
 
     except FileNotFoundError:
-        console.print_exception()
+        raise FileNotFoundError("Run 'twiner init' first.")
 
 
 @app.command()
