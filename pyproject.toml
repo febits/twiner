@@ -17,6 +17,7 @@ requests = "^2.31.0"
 pyyaml = "^6.0.1"
 plyer = "^2.1.0"
 python-dotenv = "^1.0.1"
+wget = "^3.2"
 
 
 [tool.poetry.group.dev.dependencies]

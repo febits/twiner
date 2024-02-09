@@ -46,7 +46,21 @@ def add(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Add a user to the notification pool."""
-    ...
+    try:
+        config = TwinerConfig(configfile)
+        config.read_from_config()
+
+        twitch = Twitch(config)
+        if twitch.is_user_valid(user):
+            config.yaml["tonotify"][user] = twitch.get_usericon(config, user)
+            config.write_to_config(config.yaml)
+            console.print(f"\n✅ User was added successfully at {config.path}")
+        else:
+            console.print("❌ User is not valid! Doesn't exist on Twitch")
+            raise typer.Exit(1)
+
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first") from exc
 
 
 @app.command()
@@ -58,7 +72,25 @@ def remove(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Remove a user from the notification pool."""
-    ...
+    try:
+        config = TwinerConfig(configfile)
+        config.read_from_config()
+
+        try:
+            del config.yaml["tonotify"][user]
+            usericon = config.datadir / f"{user}.png"
+            if usericon.exists():
+                usericon.unlink()
+
+            config.write_to_config(config.yaml)
+            console.print(
+                f"✅ User was removed successfully from {config.path}"
+            )
+        except KeyError as exc:
+            raise KeyError(f"{user} doesn't exist in config file") from exc
+
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first") from exc
 
 
 @app.command()
@@ -79,7 +111,7 @@ def configure(
 ):
     """Configure the Twitch Credentials."""
     try:
-        config = TwinerConfig(path=configfile)
+        config = TwinerConfig(configfile)
         config.read_from_config()
 
         twitch = Twitch(config)
@@ -103,8 +135,8 @@ def configure(
             console.print(response.json())
             raise typer.Exit(1)
 
-    except FileNotFoundError:
-        raise FileNotFoundError("Run 'twiner init' first.")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
 
 
 @app.command()
@@ -171,8 +203,8 @@ def list(
             )
         )
 
-    except FileNotFoundError:
-        raise FileNotFoundError("Run 'twiner init' first.")
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
 
 
 @app.command()
@@ -184,7 +216,7 @@ def init(
 ):
     """Init the config file (it will perform a redefining action through
     the config file, using it exclusively for the initial setup)."""
-    config = TwinerConfig(path=configfile)
+    config = TwinerConfig(configfile)
 
     if not config.path.exists():
         console.print(
@@ -197,4 +229,4 @@ def init(
             f"(overwriting current file)[/]"
         )
 
-    config.write_to_config(data=config.template)
+    config.write_to_config(config.template)

@@ -60,6 +60,18 @@ def test_list_subcommand(flag, expected):
     assert expected in result.stdout
 
 
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_list_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app, ["list", flag, DEFAULT_TEST_CONFIG_PATH + str(randint(1, MAXINT))]
+    )
+    assert result.exit_code == 1
+    assert expected not in result.stdout
+
+
 @mark.skipif(
     not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
     reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
@@ -79,3 +91,123 @@ def test_configure_subcommand(flag, expected):
 
     assert result.exit_code == 0
     assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_configure_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app,
+        ["configure", flag, DEFAULT_TEST_CONFIG_PATH],
+        input=f"a\na\n",
+    )
+
+    assert result.exit_code == 1
+    assert expected not in result.stdout
+
+
+@mark.skipif(
+    not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
+    reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
+    ".env file or pass through the pytest call. For example: CLIENTID=X "
+    "CLIENTSECRET=Y make test",
+)
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_add_subcommand(flag, expected):
+    twitch_users = [
+        "cellbit",
+        "felps",
+        "thegameawards",
+        "theprimeagen",
+        "calango",
+        "leocharada",
+        "tsoding",
+        "pcinii",
+        "rickfernello",
+        "bakagaijinlive",
+        "doutorbiscoito",
+        "g0ularte",
+        "quackity",
+        "bagi",
+        "manodeyvin",
+        "lowlevellearning",
+    ]
+
+    for user in twitch_users:
+        result = runner.invoke(
+            app, ["add", user, flag, DEFAULT_TEST_CONFIG_PATH]
+        )
+
+        assert result.exit_code == 0
+        assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_add_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app, ["add", str(randint(1, MAXINT)), flag, DEFAULT_TEST_CONFIG_PATH]
+    )
+
+    assert result.exit_code == 1
+    assert expected not in result.stdout
+
+
+@mark.skipif(
+    not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
+    reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
+    ".env file or pass through the pytest call. For example: CLIENTID=X "
+    "CLIENTSECRET=Y make test",
+)
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_delete_subcommand(flag, expected):
+    twitch_users = [
+        "cellbit",
+        "felps",
+        "thegameawards",
+        "theprimeagen",
+        "calango",
+        "leocharada",
+        "tsoding",
+        "pcinii",
+        "rickfernello",
+        "bakagaijinlive",
+        "doutorbiscoito",
+        "g0ularte",
+        "quackity",
+        "bagi",
+        "manodeyvin",
+        "lowlevellearning",
+    ]
+
+    for user in twitch_users:
+        result = runner.invoke(
+            app, ["remove", user, flag, DEFAULT_TEST_CONFIG_PATH]
+        )
+
+        assert result.exit_code == 0
+        assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_delete_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app,
+        ["remove", str(randint(1, MAXINT)), flag, DEFAULT_TEST_CONFIG_PATH],
+    )
+
+    assert result.exit_code == 1
+    assert expected not in result.stdout

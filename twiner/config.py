@@ -43,4 +43,6 @@ class TwinerConfig:
 
         self.yaml = yaml.safe_load(self.path.open(mode="r"))
 
-    def create_data_dir(self): ...
+    def create_datadir(self):
+        """Create data dir where will be stored the usericons."""
+        self.datadir.mkdir(mode=0o755, parents=True, exist_ok=True)
