@@ -90,7 +90,7 @@ class Twitch:
                 return ""
 
             config.create_datadir()
-            output = config.DEFAULT_DATA_DIR + f"/{user}.png"
+            output = str(config.datadir / f"{user}.png")
             wget.download(icon_url, out=output)
 
             return output

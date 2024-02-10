@@ -213,6 +213,36 @@ def start(
 
 
 @app.command()
+def refresh(
+    configfile: Annotated[
+        Optional[str],
+        typer.Option("--config", "-c", help="Specify a custom config path."),
+    ] = TwinerConfig.DEFAULT_CONFIG_PATH
+):
+    """Refresh the user profile pictures."""
+
+    try:
+        config = TwinerConfig(configfile)
+        config.read_from_config()
+
+        twitch = Twitch(config)
+
+        for user in config.yaml["tonotify"]:
+            usericon = config.datadir / f"{user}.png"
+            if usericon.exists():
+                usericon.unlink()
+
+            config.yaml["tonotify"][user] = twitch.get_usericon(config, user)
+            config.write_to_config(config.yaml)
+
+        console.print(
+            "\n✅ User data was refreshed successfully from " f"{config.path}"
+        )
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
+
+
+@app.command()
 def list(
     configfile: Annotated[
         Optional[str],

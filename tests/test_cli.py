@@ -7,12 +7,31 @@ from pytest import mark
 from typer.testing import CliRunner
 
 from twiner import __appname__, __version__
-from twiner.cli import add, app, configure, init, list, remove, start
+from twiner.cli import add, app, configure, init, list, refresh, remove, start
 from twiner.config import TwinerConfig
 from twiner.twitch import Twitch
 
 runner = CliRunner()
 DEFAULT_TEST_CONFIG_PATH = f"/tmp/twiner-{randint(1, MAXINT)}/twiner.yaml"
+
+twitch_users = [
+    "cellbit",
+    "felps",
+    "thegameawards",
+    "theprimeagen",
+    "calango",
+    "leocharada",
+    "tsoding",
+    "pcinii",
+    "rickfernello",
+    "bakagaijinlive",
+    "doutorbiscoito",
+    "g0ularte",
+    "quackity",
+    "bagi",
+    "manodeyvin",
+    "lowlevellearning",
+]
 
 load_dotenv()
 
@@ -24,6 +43,7 @@ def test_help_flag():
     assert remove.__name__ in result.stdout
     assert configure.__name__ in result.stdout
     assert start.__name__ in result.stdout
+    assert refresh.__name__ in result.stdout
     assert init.__name__ in result.stdout
     assert list.__name__ in result.stdout
 
@@ -121,25 +141,6 @@ def test_configure_subcommand_fail_case(flag, expected):
     [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
 )
 def test_add_subcommand(flag, expected):
-    twitch_users = [
-        "cellbit",
-        "felps",
-        "thegameawards",
-        "theprimeagen",
-        "calango",
-        "leocharada",
-        "tsoding",
-        "pcinii",
-        "rickfernello",
-        "bakagaijinlive",
-        "doutorbiscoito",
-        "g0ularte",
-        "quackity",
-        "bagi",
-        "manodeyvin",
-        "lowlevellearning",
-    ]
-
     config = TwinerConfig(DEFAULT_TEST_CONFIG_PATH)
     config.read_from_config()
 
@@ -175,42 +176,34 @@ def test_add_subcommand_fail_case(flag, expected):
     "CLIENTSECRET=Y make test",
 )
 @mark.parametrize(
+    "flag, expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_refresh_subcommand(flag, expected):
+    result = runner.invoke(app, ["refresh", flag, DEFAULT_TEST_CONFIG_PATH])
+
+    assert result.exit_code == 0
+    assert expected in result.stdout
+
+
+@mark.skipif(
+    not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
+    reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
+    ".env file or pass through the pytest call. For example: CLIENTID=X "
+    "CLIENTSECRET=Y make test",
+)
+@mark.parametrize(
     "flag,expected",
     [("--config", DEFAULT_TEST_CONFIG_PATH)],
 )
 def test_delete_subcommand(flag, expected):
-    twitch_users = [
-        "cellbit",
-        "felps",
-        "thegameawards",
-        "theprimeagen",
-        "calango",
-        "leocharada",
-        "tsoding",
-        "pcinii",
-        "rickfernello",
-        "bakagaijinlive",
-        "doutorbiscoito",
-        "g0ularte",
-        "quackity",
-        "bagi",
-        "manodeyvin",
-        "lowlevellearning",
-    ]
-
-    config = TwinerConfig(DEFAULT_TEST_CONFIG_PATH)
-    config.read_from_config()
-
-    twitch = Twitch(config)
-
     for user in twitch_users:
-        if twitch.is_user_valid(user):
-            result = runner.invoke(
-                app, ["remove", user, flag, DEFAULT_TEST_CONFIG_PATH]
-            )
+        result = runner.invoke(
+            app, ["remove", user, flag, DEFAULT_TEST_CONFIG_PATH]
+        )
 
-            assert result.exit_code == 0
-            assert expected in result.stdout
+        assert result.exit_code == 0
+        assert expected in result.stdout
 
 
 @mark.parametrize(
