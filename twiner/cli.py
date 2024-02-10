@@ -53,12 +53,21 @@ def add(
         config.read_from_config()
 
         twitch = Twitch(config)
-        if twitch.is_user_valid(user):
-            config.yaml["tonotify"][user] = twitch.get_usericon(config, user)
-            config.write_to_config(config.yaml)
-            console.print(f"\n✅ User was added successfully at {config.path}")
+
+        if twitch.is_api_working():
+            if twitch.is_user_valid(user):
+                config.yaml["tonotify"][user] = twitch.get_usericon(
+                    config, user
+                )
+                config.write_to_config(config.yaml)
+                console.print(
+                    f"\n✅ User was added successfully at {config.path}"
+                )
+            else:
+                console.print("❌ User is not valid! Doesn't exist on Twitch")
+                raise typer.Exit(1)
         else:
-            console.print("❌ User is not valid! Doesn't exist on Twitch")
+            console.print("❌ Invalid credentials")
             raise typer.Exit(1)
 
     except FileNotFoundError as exc:
@@ -154,59 +163,64 @@ def start(
         config.read_from_config()
 
         twitch = Twitch(config)
-        console.print(
-            Panel(
-                str([user.username for user in twitch.users]),
-                title="Users to Notify",
-                highlight=True,
-                border_style="grey42",
-                expand=False,
-            )
-        )
 
-        counter = 1
-        while True:
+        if twitch.is_api_working():
             console.print(
-                f"< Loop {counter} : {datetime.now().strftime('%H:%M:%S')} >"
+                Panel(
+                    str([user.username for user in twitch.users]),
+                    title="Users to Notify",
+                    highlight=True,
+                    border_style="grey42",
+                    expand=False,
+                )
             )
-            for user in twitch.users:
-                if twitch.is_user_streaming(user.username):
-                    if user.previously_shown:
-                        continue
+
+            counter = 1
+            while True:
+                console.print(
+                    f"< Loop {counter} : {datetime.now().strftime('%H:%M:%S')} >"
+                )
+                for user in twitch.users:
+                    if twitch.is_user_streaming(user.username):
+                        if user.previously_shown:
+                            continue
+                        else:
+                            user.is_streaming = True
+                            user.previously_shown = True
+
+                            stream_title = twitch.get_streams_info(
+                                user.username
+                            )["title"]
+                            user.stream_title = (
+                                stream_title
+                                if len(stream_title) < 50
+                                else stream_title[:50] + "..."
+                            )
+                            user.viewer_count = twitch.get_streams_info(
+                                user.username
+                            )["viewer_count"]
+
+                            console.print(
+                                f'\t[b]{user.username}[/]: "{user.stream_title}" '
+                                f"- {user.viewer_count} viewers"
+                            )
+                            console.print(
+                                f"\t(ready to notify: [b][i]{user.username}[/])\n"
+                            )
+
+                            send_notify(user, config)
                     else:
-                        user.is_streaming = True
-                        user.previously_shown = True
+                        if user.is_streaming:
+                            user.is_streaming = False
+                            user.previously_shown = False
+                            user.stream_title = ""
+                            user.viewer_count = 0
 
-                        stream_title = twitch.get_streams_info(user.username)[
-                            "title"
-                        ]
-                        user.stream_title = (
-                            stream_title
-                            if len(stream_title) < 50
-                            else stream_title[:50] + "..."
-                        )
-                        user.viewer_count = twitch.get_streams_info(
-                            user.username
-                        )["viewer_count"]
-
-                        console.print(
-                            f'\t[b]{user.username}[/]: "{user.stream_title}" '
-                            f"- {user.viewer_count} viewers"
-                        )
-                        console.print(
-                            f"\t(ready to notify: [b][i]{user.username}[/])\n"
-                        )
-
-                        send_notify(user, config)
-                else:
-                    if user.is_streaming:
-                        user.is_streaming = False
-                        user.previously_shown = False
-                        user.stream_title = ""
-                        user.viewer_count = 0
-
-            time.sleep(config.yaml["geral"]["loop_period"])
-            counter += 1
+                time.sleep(config.yaml["geral"]["loop_period"])
+                counter += 1
+        else:
+            console.print("❌ Invalid credentials")
+            raise typer.Exit(1)
 
     except FileNotFoundError as exc:
         raise FileNotFoundError("Run 'twiner init' first.") from exc
@@ -227,17 +241,32 @@ def refresh(
 
         twitch = Twitch(config)
 
-        for user in config.yaml["tonotify"]:
-            usericon = config.datadir / f"{user}.png"
-            if usericon.exists():
-                usericon.unlink()
+        if twitch.is_api_working():
+            for user in config.yaml["tonotify"]:
+                if twitch.is_user_valid(user):
+                    usericon = config.datadir / f"{user}.png"
+                    if usericon.exists():
+                        usericon.unlink()
 
-            config.yaml["tonotify"][user] = twitch.get_usericon(config, user)
-            config.write_to_config(config.yaml)
+                    config.yaml["tonotify"][user] = twitch.get_usericon(
+                        config, user
+                    )
+                    config.write_to_config(config.yaml)
+                else:
+                    console.print(
+                        f"\n❌ {user} doesn't exist anymore. Run 'twiner "
+                        f"remove {user}'"
+                    )
+                    raise typer.Exit(1)
 
-        console.print(
-            "\n✅ User data was refreshed successfully from " f"{config.path}"
-        )
+            console.print(
+                "\n✅ User data was refreshed successfully from "
+                f"{config.path}"
+            )
+        else:
+            console.print("❌ Invalid credentials")
+            raise typer.Exit(1)
+
     except FileNotFoundError as exc:
         raise FileNotFoundError("Run 'twiner init' first.") from exc
 

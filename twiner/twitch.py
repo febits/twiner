@@ -40,6 +40,15 @@ class Twitch:
         self.api_users = "https://api.twitch.tv/helix/users"
         self.api_streams = "https://api.twitch.tv/helix/streams"
 
+    def is_api_working(self):
+        """Test if the Twitch API is working."""
+        return (
+            requests.get(
+                self.api_streams, headers=self.api_headers
+            ).status_code
+            == 200
+        )
+
     def get_access_token(self, client_id, client_secret):
         """Obtain Twitch access token."""
         r = requests.post(

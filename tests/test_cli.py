@@ -156,6 +156,12 @@ def test_add_subcommand(flag, expected):
             assert expected in result.stdout
 
 
+@mark.skipif(
+    not getenv("CLIENTID") and not getenv("CLIENTSECRET"),
+    reason="You have to set CLIENTID and CLIENTSECRET env vars. Create a "
+    ".env file or pass through the pytest call. For example: CLIENTID=X "
+    "CLIENTSECRET=Y make test",
+)
 @mark.parametrize(
     "flag,expected",
     [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
@@ -176,7 +182,7 @@ def test_add_subcommand_fail_case(flag, expected):
     "CLIENTSECRET=Y make test",
 )
 @mark.parametrize(
-    "flag, expected",
+    "flag,expected",
     [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
 )
 def test_refresh_subcommand(flag, expected):
@@ -184,6 +190,20 @@ def test_refresh_subcommand(flag, expected):
 
     assert result.exit_code == 0
     assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_refresh_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app,
+        ["refresh", flag, DEFAULT_TEST_CONFIG_PATH + str(randint(1, MAXINT))],
+    )
+
+    assert result.exit_code == 1
+    assert expected not in result.stdout
 
 
 @mark.skipif(
@@ -220,14 +240,55 @@ def test_delete_subcommand_fail_case(flag, expected):
     assert expected not in result.stdout
 
 
+def change_credentials():
+    config = TwinerConfig(DEFAULT_TEST_CONFIG_PATH)
+    config.read_from_config()
+
+    config.yaml["creds"]["access_token"] = str(randint(1, MAXINT))
+    config.yaml["creds"]["client_id"] = str(randint(1, MAXINT))
+    config.write_to_config(config.yaml)
+
+
 @mark.parametrize(
     "flag,expected",
-    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+    [("--config", "Invalid credentials"), ("-c", "Invalid credentials")],
 )
-def test_start_subcommand_fail_case(flag, expected):
+def test_add_subcommand_fail_case_invalid_credentials(flag, expected):
+    change_credentials()
     result = runner.invoke(
         app,
-        ["start", flag, DEFAULT_TEST_CONFIG_PATH + str(randint(1, MAXINT))],
+        ["add", str(randint(1, MAXINT)), flag, DEFAULT_TEST_CONFIG_PATH],
     )
 
     assert result.exit_code == 1
+    assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", "Invalid credentials"), ("-c", "Invalid credentials")],
+)
+def test_refresh_subcommand_fail_case_invalid_credentials(flag, expected):
+    change_credentials()
+    result = runner.invoke(
+        app,
+        ["refresh", flag, DEFAULT_TEST_CONFIG_PATH],
+    )
+
+    assert result.exit_code == 1
+    assert expected in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", "Invalid credentials"), ("-c", "Invalid credentials")],
+)
+def test_start_subcommand_fail_case_invalid_credentials(flag, expected):
+    change_credentials()
+    result = runner.invoke(
+        app,
+        ["start", flag, DEFAULT_TEST_CONFIG_PATH],
+    )
+
+    assert result.exit_code == 1
+    assert expected in result.stdout
