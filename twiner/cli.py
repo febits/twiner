@@ -1,4 +1,5 @@
-from datetime import timedelta
+import time
+from datetime import datetime, timedelta
 from typing import Optional
 
 import typer
@@ -8,6 +9,7 @@ from typing_extensions import Annotated
 
 from twiner import __appname__, __version__
 from twiner.config import TwinerConfig
+from twiner.notify import send_notify
 from twiner.twitch import Twitch
 
 app = typer.Typer(help="🎮 Twiner CLI (Twitch Notifier)")
@@ -60,7 +62,7 @@ def add(
             raise typer.Exit(1)
 
     except FileNotFoundError as exc:
-        raise FileNotFoundError("Run 'twiner init' first") from exc
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
 
 
 @app.command()
@@ -90,7 +92,7 @@ def remove(
             raise KeyError(f"{user} doesn't exist in config file") from exc
 
     except FileNotFoundError as exc:
-        raise FileNotFoundError("Run 'twiner init' first") from exc
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
 
 
 @app.command()
@@ -147,7 +149,67 @@ def start(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH
 ):
     """Start the notification loop."""
-    ...
+    try:
+        config = TwinerConfig(configfile)
+        config.read_from_config()
+
+        twitch = Twitch(config)
+        console.print(
+            Panel(
+                str([user.username for user in twitch.users]),
+                title="Users to Notify",
+                highlight=True,
+                border_style="grey42",
+                expand=False,
+            )
+        )
+
+        counter = 1
+        while True:
+            console.print(
+                f"< Loop {counter} : {datetime.now().strftime('%H:%M:%S')} >"
+            )
+            for user in twitch.users:
+                if twitch.is_user_streaming(user.username):
+                    if user.previously_shown:
+                        continue
+                    else:
+                        user.is_streaming = True
+                        user.previously_shown = True
+
+                        stream_title = twitch.get_streams_info(user.username)[
+                            "title"
+                        ]
+                        user.stream_title = (
+                            stream_title
+                            if len(stream_title) < 50
+                            else stream_title[:50] + "..."
+                        )
+                        user.viewer_count = twitch.get_streams_info(
+                            user.username
+                        )["viewer_count"]
+
+                        console.print(
+                            f'\t[b]{user.username}[/]: "{user.stream_title}" '
+                            f"- {user.viewer_count} viewers"
+                        )
+                        console.print(
+                            f"\t(ready to notify: [b][i]{user.username}[/])\n"
+                        )
+
+                        send_notify(user, config)
+                else:
+                    if user.is_streaming:
+                        user.is_streaming = False
+                        user.previously_shown = False
+                        user.stream_title = ""
+                        user.viewer_count = 0
+
+            time.sleep(config.yaml["geral"]["loop_period"])
+            counter += 1
+
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("Run 'twiner init' first.") from exc
 
 
 @app.command()

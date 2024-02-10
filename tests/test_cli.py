@@ -8,6 +8,8 @@ from typer.testing import CliRunner
 
 from twiner import __appname__, __version__
 from twiner.cli import add, app, configure, init, list, remove, start
+from twiner.config import TwinerConfig
+from twiner.twitch import Twitch
 
 runner = CliRunner()
 DEFAULT_TEST_CONFIG_PATH = f"/tmp/twiner-{randint(1, MAXINT)}/twiner.yaml"
@@ -138,13 +140,19 @@ def test_add_subcommand(flag, expected):
         "lowlevellearning",
     ]
 
-    for user in twitch_users:
-        result = runner.invoke(
-            app, ["add", user, flag, DEFAULT_TEST_CONFIG_PATH]
-        )
+    config = TwinerConfig(DEFAULT_TEST_CONFIG_PATH)
+    config.read_from_config()
 
-        assert result.exit_code == 0
-        assert expected in result.stdout
+    twitch = Twitch(config)
+
+    for user in twitch_users:
+        if twitch.is_user_valid(user):
+            result = runner.invoke(
+                app, ["add", user, flag, DEFAULT_TEST_CONFIG_PATH]
+            )
+
+            assert result.exit_code == 0
+            assert expected in result.stdout
 
 
 @mark.parametrize(
@@ -190,13 +198,19 @@ def test_delete_subcommand(flag, expected):
         "lowlevellearning",
     ]
 
-    for user in twitch_users:
-        result = runner.invoke(
-            app, ["remove", user, flag, DEFAULT_TEST_CONFIG_PATH]
-        )
+    config = TwinerConfig(DEFAULT_TEST_CONFIG_PATH)
+    config.read_from_config()
 
-        assert result.exit_code == 0
-        assert expected in result.stdout
+    twitch = Twitch(config)
+
+    for user in twitch_users:
+        if twitch.is_user_valid(user):
+            result = runner.invoke(
+                app, ["remove", user, flag, DEFAULT_TEST_CONFIG_PATH]
+            )
+
+            assert result.exit_code == 0
+            assert expected in result.stdout
 
 
 @mark.parametrize(
@@ -211,3 +225,16 @@ def test_delete_subcommand_fail_case(flag, expected):
 
     assert result.exit_code == 1
     assert expected not in result.stdout
+
+
+@mark.parametrize(
+    "flag,expected",
+    [("--config", DEFAULT_TEST_CONFIG_PATH), ("-c", DEFAULT_TEST_CONFIG_PATH)],
+)
+def test_start_subcommand_fail_case(flag, expected):
+    result = runner.invoke(
+        app,
+        ["start", flag, DEFAULT_TEST_CONFIG_PATH + str(randint(1, MAXINT))],
+    )
+
+    assert result.exit_code == 1

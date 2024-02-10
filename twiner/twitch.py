@@ -12,6 +12,7 @@ class Streamer:
         username,
         usericon,
         stream_title="",
+        viewer_count=0,
         is_streaming=False,
         previously_shown=False,
     ):
@@ -20,6 +21,7 @@ class Streamer:
         self.stream_title = stream_title
         self.is_streaming = is_streaming
         self.previously_shown = previously_shown
+        self.viewer_count = viewer_count
 
 
 class Twitch:
@@ -36,6 +38,7 @@ class Twitch:
         }
         self.api_oauth_token = "https://id.twitch.tv/oauth2/token"
         self.api_users = "https://api.twitch.tv/helix/users"
+        self.api_streams = "https://api.twitch.tv/helix/streams"
 
     def get_access_token(self, client_id, client_secret):
         """Obtain Twitch access token."""
@@ -50,7 +53,18 @@ class Twitch:
 
         return r
 
-    def is_user_streaming(self): ...
+    def is_user_streaming(self, user):
+        r = requests.get(
+            self.api_streams + f"?user_login={user}", headers=self.api_headers
+        )
+
+        if r.status_code == 200:
+            if not r.json()["data"]:
+                return False
+
+            return True
+
+        return False
 
     def is_user_valid(self, user):
         """Verify if given user is valid on Twitch."""
@@ -83,4 +97,14 @@ class Twitch:
 
         return ""
 
-    def notification_loop(self): ...
+    def get_streams_info(self, user):
+        """Get streams info from a Twitch user."""
+
+        r = requests.get(
+            self.api_streams + f"?user_login={user}", headers=self.api_headers
+        )
+
+        if r.status_code == 200:
+            return r.json()["data"][0]
+
+        return {}
