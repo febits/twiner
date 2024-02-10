@@ -121,9 +121,7 @@ def test_configure_subcommand(flag, expected):
 )
 def test_configure_subcommand_fail_case(flag, expected):
     result = runner.invoke(
-        app,
-        ["configure", flag, DEFAULT_TEST_CONFIG_PATH],
-        input=f"a\na\n",
+        app, ["configure", flag, DEFAULT_TEST_CONFIG_PATH], input=f"a\na\n"
     )
 
     assert result.exit_code == 1
@@ -212,10 +210,7 @@ def test_refresh_subcommand_fail_case(flag, expected):
     ".env file or pass through the pytest call. For example: CLIENTID=X "
     "CLIENTSECRET=Y make test",
 )
-@mark.parametrize(
-    "flag,expected",
-    [("--config", DEFAULT_TEST_CONFIG_PATH)],
-)
+@mark.parametrize("flag,expected", [("--config", DEFAULT_TEST_CONFIG_PATH)])
 def test_delete_subcommand(flag, expected):
     for user in twitch_users:
         result = runner.invoke(
@@ -226,10 +221,7 @@ def test_delete_subcommand(flag, expected):
         assert expected in result.stdout
 
 
-@mark.parametrize(
-    "flag,expected",
-    [("--config", DEFAULT_TEST_CONFIG_PATH)],
-)
+@mark.parametrize("flag,expected", [("--config", DEFAULT_TEST_CONFIG_PATH)])
 def test_delete_subcommand_fail_case(flag, expected):
     result = runner.invoke(
         app,
@@ -256,8 +248,7 @@ def change_credentials():
 def test_add_subcommand_fail_case_invalid_credentials(flag, expected):
     change_credentials()
     result = runner.invoke(
-        app,
-        ["add", str(randint(1, MAXINT)), flag, DEFAULT_TEST_CONFIG_PATH],
+        app, ["add", str(randint(1, MAXINT)), flag, DEFAULT_TEST_CONFIG_PATH]
     )
 
     assert result.exit_code == 1
@@ -270,10 +261,7 @@ def test_add_subcommand_fail_case_invalid_credentials(flag, expected):
 )
 def test_refresh_subcommand_fail_case_invalid_credentials(flag, expected):
     change_credentials()
-    result = runner.invoke(
-        app,
-        ["refresh", flag, DEFAULT_TEST_CONFIG_PATH],
-    )
+    result = runner.invoke(app, ["refresh", flag, DEFAULT_TEST_CONFIG_PATH])
 
     assert result.exit_code == 1
     assert expected in result.stdout
@@ -285,10 +273,7 @@ def test_refresh_subcommand_fail_case_invalid_credentials(flag, expected):
 )
 def test_start_subcommand_fail_case_invalid_credentials(flag, expected):
     change_credentials()
-    result = runner.invoke(
-        app,
-        ["start", flag, DEFAULT_TEST_CONFIG_PATH],
-    )
+    result = runner.invoke(app, ["start", flag, DEFAULT_TEST_CONFIG_PATH])
 
     assert result.exit_code == 1
     assert expected in result.stdout

@@ -6,7 +6,7 @@ all: black isort pylint test
 
 .PHONY: black
 black:
-	-poetry run black -l 79 $(SRC) $(TEST)
+	-poetry run black --skip-magic-trailing-comma --skip-string-normalization -l 79 $(SRC) $(TEST)
 
 .PHONY: isort
 isort:
