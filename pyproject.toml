@@ -4,6 +4,17 @@ version = "0.1.0"
 description = "CLI that helps you with notifications for your favorite streamers on Twitch.tv."
 authors = ["febits <febits@proton.me>"]
 readme = "README.md"
+classifiers = [
+  "Environment :: Console",
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.11"
+]
+
+[tool.poetry.urls]
+"Homepage" = "https://pypi.org/project/twiner"
+"Source" = "https://github.com/febits/twiner"
 
 [tool.poetry.scripts]
 twiner = "twiner.cli:app"
