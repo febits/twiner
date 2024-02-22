@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "twiner"
-version = "0.1.0"
+version = "0.2.1"
 description = "CLI that helps you with notifications for your favorite streamers on Twitch.tv."
 authors = ["febits <febits@proton.me>"]
 readme = "README.md"
