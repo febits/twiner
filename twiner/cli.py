@@ -201,8 +201,7 @@ def start(
                             )["viewer_count"]
 
                             console.print(
-                                f'\t[b]{user.username}[/]: "{user.stream_title}" '
-                                f"- {user.viewer_count} viewers"
+                                f'\t[b]{user.username}[/]: "{user.stream_title}" - {user.viewer_count} viewers'
                             )
                             console.print(
                                 f"\t(ready to notify: [b][i]{user.username}[/])\n"
@@ -254,14 +253,12 @@ def refresh(
                     config.write_to_config(config.yaml)
                 else:
                     console.print(
-                        f"\n❌ {user} doesn't exist anymore. Run 'twiner "
-                        f"remove {user}'"
+                        f"\n❌ {user} doesn't exist anymore. Run 'twiner remove {user}'"
                     )
                     raise typer.Exit(1)
 
             console.print(
-                "\n✅ User data was refreshed successfully from "
-                f"{config.path}"
+                f"\n✅ User data was refreshed successfully from {config.path}"
             )
         else:
             console.print("❌ Invalid credentials")
@@ -341,13 +338,11 @@ def init(
 
     if not config.path.exists():
         console.print(
-            f"[b]✅ Config file was successfully created at "
-            f"{config.path}[/]"
+            f"[b]✅ Config file was successfully created at {config.path}[/]"
         )
     else:
         console.print(
-            f"[b]❎ Config file already exists at {config.path} "
-            f"(overwriting current file)[/]"
+            f"[b]❎ Config file already exists at {config.path} (overwriting current file)[/]"
         )
 
     config.write_to_config(config.template)
