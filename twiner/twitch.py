@@ -63,6 +63,8 @@ class Twitch:
         return r
 
     def is_user_streaming(self, user: str):
+        """Verify if the user is streaming."""
+
         r = requests.get(
             self.api_streams + f"?user_login={user}", headers=self.api_headers
         )

@@ -121,7 +121,7 @@ def test_configure_subcommand(flag, expected):
 )
 def test_configure_subcommand_fail_case(flag, expected):
     result = runner.invoke(
-        app, ["configure", flag, DEFAULT_TEST_CONFIG_PATH], input=f"a\na\n"
+        app, ["configure", flag, DEFAULT_TEST_CONFIG_PATH], input="a\na\n"
     )
 
     assert result.exit_code == 1

@@ -36,7 +36,9 @@ def main(
             callback=version,
         ),
     ] = False
-): ...
+):
+    """Configure a callback to print version number."""
+    ...
 
 
 @app.command()
