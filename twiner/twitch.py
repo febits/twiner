@@ -43,83 +43,110 @@ class Twitch:
     def is_api_working(self):
         """Test if the Twitch API is working."""
 
-        return (
-            requests.get(
-                self.api_streams, headers=self.api_headers
-            ).status_code
-            == 200
-        )
+        try:
+            return (
+                requests.get(
+                    self.api_streams, headers=self.api_headers, timeout=20
+                ).status_code
+                == 200
+            )
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
 
     def get_access_token(self, client_id: str, client_secret: str):
         """Obtain Twitch access token."""
 
-        r = requests.post(
-            self.api_oauth_token,
-            data={
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "grant_type": "client_credentials",
-            },
-        )
+        try:
+            r = requests.post(
+                self.api_oauth_token,
+                data={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "grant_type": "client_credentials",
+                },
+                timeout=20,
+            )
 
-        return r
+            return r
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
 
     def is_user_streaming(self, user: str):
         """Verify if the user is streaming."""
 
-        r = requests.get(
-            self.api_streams + f"?user_login={user}", headers=self.api_headers
-        )
+        try:
+            r = requests.get(
+                self.api_streams + f"?user_login={user}",
+                headers=self.api_headers,
+                timeout=20,
+            )
 
-        if r.status_code == 200:
-            if not r.json()["data"]:
-                return False
+            if r.status_code == 200:
+                if not r.json()["data"]:
+                    return False
 
-            return True
+                return True
 
-        return False
+            return False
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
 
     def is_user_valid(self, user: str):
         """Verify if given user is valid on Twitch."""
 
-        r = requests.get(
-            self.api_users + f"?login={user}", headers=self.api_headers
-        )
-        if r.status_code == 200:
-            if not r.json()["data"]:
-                return False
+        try:
+            r = requests.get(
+                self.api_users + f"?login={user}",
+                headers=self.api_headers,
+                timeout=20,
+            )
+            if r.status_code == 200:
+                if not r.json()["data"]:
+                    return False
 
-            return True
+                return True
 
-        return False
+            return False
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
 
     def get_usericon(self, config: TwinerConfig, user: str):
         """Get usericon from a user on Twitch."""
 
-        r = requests.get(
-            self.api_users + f"?login={user}", headers=self.api_headers
-        )
-        if r.status_code == 200:
-            icon_url = r.json()["data"][0]["profile_image_url"]
-            if not icon_url:
-                return ""
+        try:
+            r = requests.get(
+                self.api_users + f"?login={user}",
+                headers=self.api_headers,
+                timeout=20,
+            )
+            if r.status_code == 200:
+                icon_url = r.json()["data"][0]["profile_image_url"]
+                if not icon_url:
+                    return ""
 
-            config.create_datadir()
-            output = str(config.datadir / f"{user}.png")
-            wget.download(icon_url, out=output)
+                config.create_datadir()
+                output = str(config.datadir / f"{user}.png")
+                wget.download(icon_url, out=output)
 
-            return output
+                return output
 
-        return ""
+            return ""
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
 
     def get_streams_info(self, user: str):
         """Get streams info from a Twitch user."""
 
-        r = requests.get(
-            self.api_streams + f"?user_login={user}", headers=self.api_headers
-        )
+        try:
+            r = requests.get(
+                self.api_streams + f"?user_login={user}",
+                headers=self.api_headers,
+                timeout=20,
+            )
 
-        if r.status_code == 200:
-            return r.json()["data"][0]
+            if r.status_code == 200:
+                return r.json()["data"][0]
 
-        return {}
+            return {}
+        except requests.exceptions.Timeout as e:
+            raise requests.exceptions.Timeout("Request has timed out.") from e
