@@ -33,6 +33,7 @@ class TwinerConfig:
 
     def write_to_config(self, data: Dict[str, Dict]):
         """Write the given data to the config file."""
+
         if not self.path.exists():
             self.path.parent.mkdir(mode=0o744, exist_ok=True)
             self.path.touch(mode=0o644)
@@ -46,4 +47,5 @@ class TwinerConfig:
 
     def create_datadir(self):
         """Create data dir where will be stored the usericons."""
+
         self.datadir.mkdir(mode=0o755, parents=True, exist_ok=True)

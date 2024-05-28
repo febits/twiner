@@ -42,6 +42,7 @@ class Twitch:
 
     def is_api_working(self):
         """Test if the Twitch API is working."""
+
         return (
             requests.get(
                 self.api_streams, headers=self.api_headers
@@ -51,6 +52,7 @@ class Twitch:
 
     def get_access_token(self, client_id: str, client_secret: str):
         """Obtain Twitch access token."""
+
         r = requests.post(
             self.api_oauth_token,
             data={
@@ -79,6 +81,7 @@ class Twitch:
 
     def is_user_valid(self, user: str):
         """Verify if given user is valid on Twitch."""
+
         r = requests.get(
             self.api_users + f"?login={user}", headers=self.api_headers
         )
@@ -92,6 +95,7 @@ class Twitch:
 
     def get_usericon(self, config: TwinerConfig, user: str):
         """Get usericon from a user on Twitch."""
+
         r = requests.get(
             self.api_users + f"?login={user}", headers=self.api_headers
         )

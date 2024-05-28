@@ -18,6 +18,7 @@ console = Console()
 
 def version(value: bool):
     """Callback that shows the current version."""
+
     if value:
         console.print(__appname__, __version__)
         raise typer.Exit(0)
@@ -50,6 +51,7 @@ def add(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Add a user to the notification pool."""
+
     try:
         config = TwinerConfig(configfile)
         config.read_from_config()
@@ -85,6 +87,7 @@ def remove(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Remove a user from the notification pool."""
+
     try:
         config = TwinerConfig(configfile)
         config.read_from_config()
@@ -123,6 +126,7 @@ def configure(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH,
 ):
     """Configure the Twitch Credentials."""
+
     try:
         config = TwinerConfig(configfile)
         config.read_from_config()
@@ -160,6 +164,7 @@ def start(
     ] = TwinerConfig.DEFAULT_CONFIG_PATH
 ):
     """Start the notification loop."""
+
     try:
         config = TwinerConfig(configfile)
         config.read_from_config()
@@ -336,6 +341,7 @@ def init(
 ):
     """Init the config file (it will perform a redefining action through
     the config file, using it exclusively for the initial setup)."""
+
     config = TwinerConfig(configfile)
 
     if not config.path.exists():
