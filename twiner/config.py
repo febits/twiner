@@ -1,5 +1,6 @@
 from os import getenv
 from pathlib import Path
+from typing import Dict
 
 import yaml
 
@@ -11,7 +12,7 @@ class TwinerConfig:
     DEFAULT_CONFIG_PATH = f"{getenv('HOME')}/.config/twiner/twiner.yaml"
     DEFAULT_DATA_DIR = f"{getenv('HOME')}/.local/share/twiner"
 
-    def __init__(self, path):
+    def __init__(self, path: str | None):
         self.template = {
             "geral": {
                 "loop_period": 300,
@@ -30,7 +31,7 @@ class TwinerConfig:
         self.path = Path(path)
         self.datadir = Path(self.DEFAULT_DATA_DIR)
 
-    def write_to_config(self, data):
+    def write_to_config(self, data: Dict[str, Dict]):
         """Write the given data to the config file."""
         if not self.path.exists():
             self.path.parent.mkdir(mode=0o744, exist_ok=True)

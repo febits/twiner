@@ -9,12 +9,12 @@ class Streamer:
 
     def __init__(
         self,
-        username,
-        usericon,
-        stream_title="",
-        viewer_count=0,
-        is_streaming=False,
-        previously_shown=False,
+        username: str,
+        usericon: str,
+        stream_title: str = "",
+        viewer_count: int = 0,
+        is_streaming: bool = False,
+        previously_shown: bool = False,
     ):
         self.username = username
         self.usericon = usericon
@@ -49,7 +49,7 @@ class Twitch:
             == 200
         )
 
-    def get_access_token(self, client_id, client_secret):
+    def get_access_token(self, client_id: str, client_secret: str):
         """Obtain Twitch access token."""
         r = requests.post(
             self.api_oauth_token,
@@ -62,7 +62,7 @@ class Twitch:
 
         return r
 
-    def is_user_streaming(self, user):
+    def is_user_streaming(self, user: str):
         r = requests.get(
             self.api_streams + f"?user_login={user}", headers=self.api_headers
         )
@@ -75,7 +75,7 @@ class Twitch:
 
         return False
 
-    def is_user_valid(self, user):
+    def is_user_valid(self, user: str):
         """Verify if given user is valid on Twitch."""
         r = requests.get(
             self.api_users + f"?login={user}", headers=self.api_headers
@@ -88,7 +88,7 @@ class Twitch:
 
         return False
 
-    def get_usericon(self, config: TwinerConfig, user):
+    def get_usericon(self, config: TwinerConfig, user: str):
         """Get usericon from a user on Twitch."""
         r = requests.get(
             self.api_users + f"?login={user}", headers=self.api_headers
@@ -106,7 +106,7 @@ class Twitch:
 
         return ""
 
-    def get_streams_info(self, user):
+    def get_streams_info(self, user: str):
         """Get streams info from a Twitch user."""
 
         r = requests.get(
