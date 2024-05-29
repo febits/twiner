@@ -15,7 +15,7 @@ app = typer.Typer(help="🎮 Twiner CLI (Twitch Notifier)")
 console = Console()
 
 
-def version(value: bool):
+def version_cb(value: bool):
     """Callback that shows the current version."""
 
     if value:
@@ -33,7 +33,7 @@ def main(
             "-V",
             help="Show the current version.",
             is_flag=True,
-            callback=version,
+            callback=version_cb,
         ),
     ] = False
 ):
