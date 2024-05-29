@@ -1,7 +1,14 @@
+import time
+from datetime import datetime
+from typing import Callable
+
 import requests
 import wget
+from rich.console import Console
 
 from twiner.config import TwinerConfig
+
+console = Console()
 
 
 class Streamer:
@@ -150,3 +157,53 @@ class Twitch:
             return {}
         except requests.exceptions.Timeout as e:
             raise requests.exceptions.Timeout("Request has timed out.") from e
+
+    def notification_loop(
+        self,
+        config: TwinerConfig,
+        notify: Callable[[Streamer, TwinerConfig], None],
+    ):
+        "The notification loop of twitch users from config."
+
+        counter = 1
+        while True:
+            console.print(
+                f"< Loop {counter} : {datetime.now().strftime('%H:%M:%S')} >"
+            )
+            for user in self.users:
+                if self.is_user_streaming(user.username):
+                    if user.previously_shown:
+                        continue
+
+                    user.is_streaming = True
+                    user.previously_shown = True
+
+                    stream_title = self.get_streams_info(user.username)[
+                        "title"
+                    ]
+                    user.stream_title = (
+                        stream_title
+                        if len(stream_title) < 50
+                        else stream_title[:50] + "..."
+                    )
+                    user.viewer_count = self.get_streams_info(user.username)[
+                        "viewer_count"
+                    ]
+
+                    console.print(
+                        f'\t[b]{user.username}[/]: "{user.stream_title}" - {user.viewer_count} viewers'
+                    )
+                    console.print(
+                        f"\t(ready to notify: [b][i]{user.username}[/])\n"
+                    )
+
+                    notify(user, config)
+                else:
+                    if user.is_streaming:
+                        user.is_streaming = False
+                        user.previously_shown = False
+                        user.stream_title = ""
+                        user.viewer_count = 0
+
+            time.sleep(config.yaml["geral"]["loop_period"])
+            counter += 1

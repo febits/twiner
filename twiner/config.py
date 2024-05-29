@@ -38,12 +38,14 @@ class TwinerConfig:
             self.path.parent.mkdir(mode=0o744, exist_ok=True)
             self.path.touch(mode=0o644)
 
-        yaml.dump(data, self.path.open(mode="w"))
+        with self.path.open(mode="w", encoding="utf-8") as f:
+            yaml.dump(data, f)
 
     def read_from_config(self):
         """Read the config file."""
 
-        self.yaml = yaml.safe_load(self.path.open(mode="r"))
+        with self.path.open(mode="r", encoding="utf-8") as f:
+            self.yaml = yaml.safe_load(f)
 
     def create_datadir(self):
         """Create data dir where will be stored the usericons."""

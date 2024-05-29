@@ -1,5 +1,4 @@
-import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Optional
 
 import typer
@@ -39,7 +38,6 @@ def main(
     ] = False
 ):
     """Configure a callback to print version number."""
-    ...
 
 
 @app.command()
@@ -182,48 +180,8 @@ def start(
                 )
             )
 
-            counter = 1
-            while True:
-                console.print(
-                    f"< Loop {counter} : {datetime.now().strftime('%H:%M:%S')} >"
-                )
-                for user in twitch.users:
-                    if twitch.is_user_streaming(user.username):
-                        if user.previously_shown:
-                            continue
-                        else:
-                            user.is_streaming = True
-                            user.previously_shown = True
+            twitch.notification_loop(config, send_notify)
 
-                            stream_title = twitch.get_streams_info(
-                                user.username
-                            )["title"]
-                            user.stream_title = (
-                                stream_title
-                                if len(stream_title) < 50
-                                else stream_title[:50] + "..."
-                            )
-                            user.viewer_count = twitch.get_streams_info(
-                                user.username
-                            )["viewer_count"]
-
-                            console.print(
-                                f'\t[b]{user.username}[/]: "{user.stream_title}" - {user.viewer_count} viewers'
-                            )
-                            console.print(
-                                f"\t(ready to notify: [b][i]{user.username}[/])\n"
-                            )
-
-                            send_notify(user, config)
-                    else:
-                        if user.is_streaming:
-                            user.is_streaming = False
-                            user.previously_shown = False
-                            user.stream_title = ""
-                            user.viewer_count = 0
-
-                time.sleep(config.yaml["geral"]["loop_period"])
-                counter += 1
         else:
             console.print("❌ Invalid credentials")
             raise typer.Exit(1)
