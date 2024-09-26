@@ -30,7 +30,8 @@ twitch_users = [
     "quackity",
     "bagi",
     "manodeyvin",
-    "lowlevellearning",
+    "lowleveltv",
+    "omeiaum"
 ]
 
 load_dotenv()
